@@ -1,0 +1,6 @@
+﻿services:
+  geo-back:
+    image: geo-back
+    build:
+      context: .
+      dockerfile: geo-back/Dockerfile
