@@ -1,6 +1,0 @@
-@geo_back_HostAddress = http://localhost:5063
-
-GET {{geo_back_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
