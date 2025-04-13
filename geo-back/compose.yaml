@@ -1,6 +1,48 @@
-﻿services:
-  geo-back:
-    image: geo-back
-    build:
-      context: .
-      dockerfile: geo-back/Dockerfile
+﻿version: '3.8'
+
+services:
+  postgres-db:
+    image: postgis/postgis:15-3.3
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: fkw_db_usr
+      POSTGRES_PASSWORD: fwk_db_pass
+      POSTGRES_DB: fkw_db
+    ports:
+      - "5430:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  migration:
+    image: flyway/flyway:9.21
+    container_name: flyway_migration
+    depends_on:
+      - postgres-db
+    entrypoint: [
+      "sh", "-c",
+      "flyway -url=jdbc:postgresql://postgres-db:5432/fkw_db -user=fkw_db_usr -password=fwk_db_pass -encoding=UTF-8 migrate"
+    ]
+    volumes:
+      - ./geo-back/Migrations:/flyway/sql
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+
+  mockserver:
+    image: jamesdbloom/mockserver:latest
+    container_name: mockserver
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/init-mockserver.json
+    volumes:
+      - ./init-mockserver.json:/config/init-mockserver.json
+    command: -serverPort 1080
+
+volumes:
+  db-data:
